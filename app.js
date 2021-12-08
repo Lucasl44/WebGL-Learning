@@ -7,9 +7,12 @@ let vertexShadertext =
 "precision mediump float;",
 "",
 "attribute vec2 vertPosition;",
+"attribute vec3 vertColor;",
+"varying vec3 fragColor;",
 "",
 "void main()",
 "{",
+"   fragColor = vertColor;",
 "   gl_Position = vec4(vertPosition, 0.0, 1.0);",
 "}"
 ].join("\n");
@@ -19,9 +22,10 @@ let fragmentShaderText =
 [
 "precision mediump float;",
 "",
+"varying vec3 fragColor;",
 "void main()",
 "{",
-"   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);",
+"   gl_FragColor = vec4(fragColor, 1.0);",
 "}"
 ].join("\n");
 
@@ -89,10 +93,10 @@ const initDemo = () => {
 
     //create a buffer, set all the information the graphics card is going to be using
     const triangleVertices = 
-    [
-        0.0, 0.5,
-        -0.5, -0.5,
-        0.5, -0.5
+    [//X, Y         R G B
+        0.0, 0.5,   1.0, 1.0, 0.0,
+        -0.5, -0.5, 0.7, 0.0, 1.0,
+        0.5, -0.5,  0.1, 1.0, 0.6
     ];
 
     //create a chunk of memory to be allocated on the GPU
@@ -104,18 +108,31 @@ const initDemo = () => {
 
     //specify which program and the name of the attribute we are using
     const positionAttribLocation = gl.getAttribLocation(program, "vertPosition");
+    const colorAttribLocation = gl.getAttribLocation(program, "vertColor");
+
 
     gl.vertexAttribPointer(
         positionAttribLocation, //Attribute location
         2, //number of elements per attribute, set to 2 on line 9
         gl.FLOAT, //type of elements
         gl.FALSE,
-        2 * Float32Array.BYTES_PER_ELEMENT, //size of an  individual vertex
+        5 * Float32Array.BYTES_PER_ELEMENT, //size of an  individual vertex
         0 //offset from the beginning of a single vertex to this attribute
+    );
+
+    gl.vertexAttribPointer(
+        colorAttribLocation, //Attribute location
+        3, //number of elements per attribute, set to 2 on line 9
+        gl.FLOAT, //type of elements
+        gl.FALSE,
+        5 * Float32Array.BYTES_PER_ELEMENT, //size of an  individual vertex
+        3 * Float32Array.BYTES_PER_ELEMENT //offset from the beginning of a single vertex to this attribute
     );
 
     //enables the attribute for use
     gl.enableVertexAttribArray(positionAttribLocation)
+    gl.enableVertexAttribArray(colorAttribLocation)
+
 
     //main render loop
 
