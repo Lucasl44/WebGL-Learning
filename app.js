@@ -4,15 +4,15 @@
 //gl_position takes 4 and has two from vertPosition
 let vertexShadertext = 
 [
-    "precision mediump float;",
-    "",
-    "attribute vec2 vertPosition",
-    "",
-    "void main()",
-    "{",
-    " gl_Position = vec4(vertPosition, 0.0, 1.0);",
-    "}"
-   ].join("\n");
+"precision mediump float;",
+"",
+"attribute vec2 vertPosition;",
+"",
+"void main()",
+"{",
+"   gl_Position = vec4(vertPosition, 0.0, 1.0);",
+"}"
+].join("\n");
 
 //sets the color to the fragColor
 let fragmentShaderText = 
@@ -55,8 +55,17 @@ const initDemo = () => {
 
     //compiles the shaders set above
     gl.compileShader(vertexShader);
-    gl.compileShader(fragmentShader);
 
+    //checks it has indeed been compiled and gives a error log if not
+    if(!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+        console.error("ERROR compiling vertex shader", gl.getShaderInfoLog(vertexShader));
+        return;
+    }
+    gl.compileShader(fragmentShader);
+    if(!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+        console.error("ERROR compiling fragment shader", gl.getShaderInfoLog(fragmentShader));
+        return;
+    }
 };
 
 // const vertexShader = (vertPosition, vertColor) => {
