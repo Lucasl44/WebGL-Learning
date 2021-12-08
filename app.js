@@ -66,12 +66,26 @@ const initDemo = () => {
         console.error("ERROR compiling fragment shader", gl.getShaderInfoLog(fragmentShader));
         return;
     }
-};
 
-// const vertexShader = (vertPosition, vertColor) => {
-//     //sets fragColor to whatever the vertex color was, and position sets where on the rendering canvas you want to draw that vertix
-//     return {
-//         fragColor: vertColor,
-//         gl_position: [vertPosition.x, vertPosition.y, 0.0, 1.0]
-//     };
-// }
+    //attaches the shaders to a program
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+
+    gl.linkProgram(program);
+
+    //error handling for linking
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error("ERROR linking program", gl.getProgramInfoLog(program));
+        return;
+    };
+
+    //validate for further testing, only do in development
+    gl.validateProgram(program);
+    if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
+        console.error("ERROR validating program", gl.getProgramInfoLog(program));
+        return;
+    }
+
+    //create a buffer, set all the information the graphics card is going to be using
+};
