@@ -88,4 +88,38 @@ const initDemo = () => {
     }
 
     //create a buffer, set all the information the graphics card is going to be using
+    const triangleVertices = 
+    [
+        0.0, 0.5,
+        -0.5, -0.5,
+        0.5, -0.5
+    ];
+
+    //create a chunk of memory to be allocated on the GPU
+    const triangleVertexBufferObject = gl.createBuffer();
+    //passing varible to graphics car and binding it to the one we created above
+    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
+    //specify the data to the active buffer, always uses the active buffer, the three parameters are: the type of buffer, specifies the points in 32 bits so can be read by webgl, sending the data once 
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleVertices), gl.STATIC_DRAW);
+
+    //specify which program and the name of the attribute we are using
+    const positionAttribLocation = gl.getAttribLocation(program, "vertPosition");
+
+    gl.vertexAttribPointer(
+        positionAttribLocation, //Attribute location
+        2, //number of elements per attribute, set to 2 on line 9
+        gl.FLOAT, //type of elements
+        gl.FALSE,
+        2 * Float32Array.BYTES_PER_ELEMENT, //size of an  individual vertex
+        0 //offset from the beginning of a single vertex to this attribute
+    );
+
+    //enables the attribute for use
+    gl.enableVertexAttribArray(positionAttribLocation)
+
+    //main render loop
+
+    //says were going to draw in triangles, skip 0 vertexs, draw 3 vertices
+    gl.useProgram(program);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 };
