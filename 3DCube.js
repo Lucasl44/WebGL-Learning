@@ -1,3 +1,4 @@
+const { vec2, vec3, mat3, mat4 } = glMatrix;
 //in order of line what each does:
 //want to use medium precision on the first levels, less accuracy but faster
 //vec2, vec3, vec4, represent pairs, triplets and 4 sets of floats that go together, vec2 has a x and a y
@@ -6,7 +7,7 @@ let vertexShadertext =
 [
 "precision mediump float;",
 "",
-"attribute vec2 vertPosition;",
+"attribute vec3 vertPosition;",
 "attribute vec3 vertColor;",
 "varying vec3 fragColor;",
 "uniform mat4 mWorld;",
@@ -16,7 +17,7 @@ let vertexShadertext =
 "void main()",
 "{",
 "   fragColor = vertColor;",
-"   gl_Position = mProj * mView * mWorld * vec3(vertPosition, 1.0);",
+"   gl_Position = mProj * mView * mWorld * vec4(vertPosition, 1.0);",
 "}"
 ].join("\n");
 //in lines above to get the vertices, the mworld is multiplied first then mView and finally mProj
@@ -44,7 +45,7 @@ const initDemo = () => {
     };
 
     if(!gl) {
-        alert("Your browswer does not support WebGL");
+        alert("Your browser does not support WebGL");
     };
 
     //this is (red, green, blue, alpha) alpha will be 1.0 meaning opaque, 0 is invisible
@@ -119,7 +120,7 @@ const initDemo = () => {
         3, //number of elements per attribute, set to 2 on line 9
         gl.FLOAT, //type of elements
         gl.FALSE,
-        5 * Float32Array.BYTES_PER_ELEMENT, //size of an  individual vertex
+        6 * Float32Array.BYTES_PER_ELEMENT, //size of an  individual vertex
         0 //offset from the beginning of a single vertex to this attribute
     );
 
@@ -136,21 +137,33 @@ const initDemo = () => {
     gl.enableVertexAttribArray(positionAttribLocation)
     gl.enableVertexAttribArray(colorAttribLocation)
 
+    //telling webgl which program should be active
+    gl.useProgram(program);
+
     //getting the name of the program we are using as well as the attribute
     const matWorldUniformLocation = gl.getUniformLocation(program, "mWorld");
     const matViewUniformLocation = gl.getUniformLocation(program, "mView");
     const matProjUniformLocation = gl.getUniformLocation(program, "mProj");
 
+    //the above and below: below three variables on CPU in RAm that are identity matrices that dont do any transformations, and above: locations for those spaces in the GPU 
     //setting the above values to all 0s, in a 16 entry array
     const worldMatrix = new Float32Array(16);
     const viewMatrix = new Float32Array(16);
     const projMatrix = new Float32Array(16);
     
     //the identity matrix, tell it youre creating an identity matrix, and give it the matrix you want to change
-    mat4.identity(worldMatrix)
+
+    mat4.identity(worldMatrix);
+    mat4.identity(viewMatrix);
+    mat4.identity(projMatrix);
+
+    //send above matrices to shader, working with matrix, its 4*4 in floats and a v, set which one you want to set, has to be gl.false for webgl, this is transpose. then the float32array that you want to send
+    gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
+    gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
+    gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix);
+
     //main render loop
 
     //says were going to draw in triangles, skip 0 vertexs, draw 3 vertices
-    gl.useProgram(program);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 };

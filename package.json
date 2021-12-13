@@ -18,5 +18,6 @@
   },
   "homepage": "https://github.com/Lucasl44/WebGL-Learning#readme",
   "dependencies": {
+    "gl-matrix": "^3.4.3"
   }
 }
