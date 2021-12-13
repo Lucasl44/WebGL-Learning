@@ -1,0 +1,22 @@
+{
+  "name": "webgl",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lucasl44/WebGL-Learning.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lucasl44/WebGL-Learning/issues"
+  },
+  "homepage": "https://github.com/Lucasl44/WebGL-Learning#readme",
+  "dependencies": {
+  }
+}
