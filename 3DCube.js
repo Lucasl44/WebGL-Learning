@@ -165,7 +165,19 @@ const initDemo = () => {
 
     //main render loop
     //updates as frequently as the computer can process it, in this case to rotate
+    let identityMatrix = new Float32Array(16);
+    mat4.identity(identityMatrix);
+    let angle = 0;
+    const loop = () => {
+        angle = performance.now() / 1000 / 6 * 2 * Math.PI;
+        mat4.rotate(worldMatrix, identityMatrix, angle, [0, 1, 0]);
+        gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
 
+        gl.clearColor(0.75, 0.85, 0.8, 1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
     //says were going to draw in triangles, skip 0 vertexs, draw 3 vertices
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
 };
