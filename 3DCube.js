@@ -52,6 +52,12 @@ const initDemo = () => {
     gl.clearColor(0.75, 0.85, 0.8, 1.0);
     //this sets up the above changes
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    //Depth test is to not draw faces that appear behind others
+    gl.enable(gl.DEPTH_TEST);
+    //stops extra math being done in background unnecessarily
+    gl.enable(gl.CULL_FACE);
+    gl.frontFace(gl.CCW);
+    gl.cullFace(gl.back);
 
     //create the shaders
     let vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -96,19 +102,83 @@ const initDemo = () => {
     }
 
     //create a buffer, set all the information the graphics card is going to be using
-    const triangleVertices = 
+    const boxVertices = 
     [//X, Y , Z        R G B
-        0.0, 0.5, 0.0,   1.0, 1.0, 0.0,
-        -0.5, -0.5, 0.0, 0.7, 0.0, 1.0,
-        0.5, -0.5, 0.0,  0.1, 1.0, 0.6
+        //top
+        -1.0, 1.0, -1.0,   0.5, 0.5, 0.5,
+        -1.0, 1.0, 1.0, 0.5, 0.5, 0.5,
+        1.0, 1.0, -1.0,  0.5, 0.5, 0.5,
+        1.0, 1.0, -1.0, 0.5, 0.5, 0.5,
+
+        //left
+        -1.0, 1.0, 1.0,   0.75, 0.25, 0.5,
+        -1.0, -1.0, 1.0,   0.75, 0.25, 0.5,
+        -1.0, -1.0, -1.0,   0.75, 0.25, 0.5,
+        -1.0, 1.0, -1.0,    0.75, 0.25, 0.5,
+
+        //right
+        1.0, 1.0, 1.0,      0.25, 0.25, 0.75,
+        1.0, -1.0, 1.0,     0.25, 0.25, 0.75,
+        1.0, -1.0, -1.0,    0.25, 0.25, 0.75,
+        1.0, 1.0, -1.0,     0.25, 0.25, 0.75,
+
+        //front
+        1.0, 1.0, 1.0,      1.0, 0.0, 0.15,
+        1.0, -1.0, 1.0,     1.0, 0.0, 0.15,
+        -1.0, -1.0, 1.0,    1.0, 0.0, 0.15,
+        -1.0, 1.0, 1.0,     1.0, 0.0, 0.15,
+
+        //back
+        1.0, 1.0, -1.0,     0.0, 1.0, 0.15,
+        1.0, -1.0, -1.0,    0.0, 1.0, 0.15,
+        -1.0, -1.0, -1.0,   0.0, 1.0, 0.15,
+        -1.0, 1.0, -1.0,    0.0, 1.0, 0.15,
+        
+        //bottom
+        -1.0, -1.0, -1.0,   0.5, 0.5, 1.0,
+        -1.0, -1.0, 1.0,    0.5, 0.5, 1.0,
+        1.0, -1.0, 1.0,     0.5, 0.5, 1.0,
+        1.0, -1.0, -1.0,    0.5, 0.5, 1.0
     ];
+
+    //which vertices form triangles
+    const boxIndices = 
+    [
+        //top
+        0, 1, 2,
+        0, 2, 3,
+
+        //left
+        5, 4, 6,
+        6, 4, 7,
+
+        //right
+        8, 9, 10,
+        8, 10, 11,
+
+        //front
+        13, 12, 14,
+        15, 14, 12,
+
+        //back
+        16, 17, 18,
+        16, 18, 19,
+
+        //bottom
+        21, 20, 22,
+        22, 20, 23
+];
 
     //create a chunk of memory to be allocated on the GPU
     const triangleVertexBufferObject = gl.createBuffer();
     //passing varible to graphics car and binding it to the one we created above
     gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
     //specify the data to the active buffer, always uses the active buffer, the three parameters are: the type of buffer, specifies the points in 32 bits so can be read by webgl, sending the data once 
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleVertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boxVertices), gl.STATIC_DRAW);
+
+    const boxIndexBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, boxIndexBufferObject);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(boxIndices), gl.STATIC_DRAW);
 
     //specify which program and the name of the attribute we are using
     const positionAttribLocation = gl.getAttribLocation(program, "vertPosition");
@@ -155,13 +225,17 @@ const initDemo = () => {
     
     //lookat is setting the camera position, look at docs for reference
     mat4.identity(worldMatrix);
-    mat4.lookAt(viewMatrix, [0, 0, -2], [0, 0, 0], [0, 1, 0]);
+    mat4.lookAt(viewMatrix, [0, 0, -8], [0, 0, 0], [0, 1, 0]);
     mat4.perspective(projMatrix, glMatrix.glMatrix.toRadian(45), canvas.width / canvas.height, 0.1, 1000.0);
 
     //send above matrices to shader, working with matrix, its 4*4 in floats and a v, set which one you want to set, has to be gl.false for webgl, this is transpose. then the float32array that you want to send
     gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
     gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
     gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix);
+
+    let xRotationMatrix = new Float32Array(16);
+    let yRotationMatrix = new Float32Array(16);
+
 
     //main render loop
     //updates as frequently as the computer can process it, in this case to rotate
@@ -170,12 +244,15 @@ const initDemo = () => {
     let angle = 0;
     const loop = () => {
         angle = performance.now() / 1000 / 6 * 2 * Math.PI;
-        mat4.rotate(worldMatrix, identityMatrix, angle, [0, 1, 0]);
+        mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
+        mat4.rotate(xRotationMatrix, identityMatrix, angle / 4, [1, 0, 0]);
+        //just says multiple x by y and apply it to world
+        mat4.mul(worldMatrix, xRotationMatrix, yRotationMatrix);
         gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
 
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
         requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
