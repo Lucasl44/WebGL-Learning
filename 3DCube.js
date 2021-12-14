@@ -1,4 +1,4 @@
-const { vec2, vec3, mat3, mat4 } = glMatrix;
+const { vec2, vec3, mat3, mat4, toRadian } = glMatrix;
 //in order of line what each does:
 //want to use medium precision on the first levels, less accuracy but faster
 //vec2, vec3, vec4, represent pairs, triplets and 4 sets of floats that go together, vec2 has a x and a y
@@ -152,10 +152,11 @@ const initDemo = () => {
     const projMatrix = new Float32Array(16);
     
     //the identity matrix, tell it youre creating an identity matrix, and give it the matrix you want to change
-
+    
+    //lookat is setting the camera position, look at docs for reference
     mat4.identity(worldMatrix);
-    mat4.identity(viewMatrix);
-    mat4.identity(projMatrix);
+    mat4.lookAt(viewMatrix, [0, 0, -2], [0, 0, 0], [0, 1, 0]);
+    mat4.perspective(projMatrix, glMatrix.glMatrix.toRadian(45), canvas.width / canvas.height, 0.1, 1000.0);
 
     //send above matrices to shader, working with matrix, its 4*4 in floats and a v, set which one you want to set, has to be gl.false for webgl, this is transpose. then the float32array that you want to send
     gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
@@ -163,6 +164,7 @@ const initDemo = () => {
     gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix);
 
     //main render loop
+    //updates as frequently as the computer can process it, in this case to rotate
 
     //says were going to draw in triangles, skip 0 vertexs, draw 3 vertices
     gl.drawArrays(gl.TRIANGLES, 0, 3);
